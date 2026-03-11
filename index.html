@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>5-HT2A NeuroAtlas — Htr2a-IRES-Cre</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/openseadragon.min.js"></script>
+<style>
+:root{
+  --bg:#07090c; --surf:#0c0f15; --surf2:#12161e; --bdr:#1a1f2c; --bdr2:#222a3a;
+  --txt:#dde2ec; --txt2:#8a95af; --txt3:#556178;
+  --grn:#55CF1A; --gfp:#55CF1A; --blue:#95AAD3; --warn:#bf4567;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);font-family:'Syne',sans-serif}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(149,170,211,.05),transparent);pointer-events:none}
+a{color:inherit;text-decoration:none}
+.app{position:relative;z-index:1;min-height:100vh;display:grid;grid-template-columns:220px 1fr}
+
+/* ── SIDEBAR ── */
+.sidebar{background:var(--surf);border-right:1px solid var(--bdr);padding:18px 0;display:flex;flex-direction:column;min-height:100vh;position:sticky;top:0;height:100vh;overflow-y:auto}
+.logo{padding:0 16px 16px;border-bottom:1px solid var(--bdr)}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--blue);flex-shrink:0;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.55)}}
+.atlas-name{color:var(--grn);font-size:13px;font-weight:700}
+.subline{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--blue);margin-top:4px;line-height:1.5}
+.monoline{font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--txt3);margin-top:2px}
+.ssec{padding:14px 16px 5px;font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--txt3)}
+.sitem{margin:0 7px 1px;padding:8px 10px;border-radius:8px;color:var(--txt2);cursor:pointer;font-size:12px;border:1px solid transparent;transition:.15s}
+.sitem:hover{background:var(--surf2);color:var(--txt)}
+.sitem.on{background:rgba(149,170,211,.08);color:var(--blue);border-color:rgba(149,170,211,.2)}
+.sitem-info{margin:0 7px 1px;padding:6px 10px;border-radius:8px;color:var(--txt3);font-size:11px;font-family:'JetBrains Mono',monospace;cursor:default;line-height:1.6}
+.sitem-info span{color:var(--txt2)}
+.spacer{flex:1}
+.back-link{margin:0 7px 8px;padding:8px 10px;border-radius:8px;color:var(--txt3);font-size:11px;font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:6px;border:1px solid var(--bdr);cursor:pointer;transition:.15s;text-decoration:none}
+.back-link:hover{border-color:var(--grn);color:var(--grn)}
+
+/* ── MAIN ── */
+.main{padding:22px 26px 20px;min-width:0}
+.topbar{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px}
+.title{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.title em{font-style:normal;color:var(--blue)}
+.subtitle{font-family:'JetBrains Mono',monospace;font-size:8.5px;color:var(--txt3);margin-top:4px}
+
+/* ── STATS ── */
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.stat{background:var(--surf);border:1px solid var(--bdr);border-radius:11px;padding:10px 14px;min-width:100px}
+.stat .n{font-size:18px;font-weight:700}
+.stat .l{font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--txt3);text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
+
+/* ── VIEWER ── */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:12px;min-height:65vh}
+.card{background:var(--surf);border:1px solid var(--bdr2);border-radius:14px;overflow:hidden}
+.cardhdr{padding:12px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cardtitle{font-size:13px;font-weight:700}
+.cardsub{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--txt3);margin-top:2px}
+.badge{margin-left:auto;background:rgba(149,170,211,.08);border:1px solid rgba(149,170,211,.2);color:var(--blue);font-family:'JetBrains Mono',monospace;font-size:8px;border-radius:5px;padding:3px 9px;white-space:nowrap}
+.viewerwrap{position:relative;height:65vh;background:#000}
+#viewer{width:100%;height:100%}
+.overlay{position:absolute;left:10px;top:10px;display:flex;gap:6px;align-items:center;z-index:10;pointer-events:none}
+.chip{font-family:'JetBrains Mono',monospace;font-size:7.5px;padding:3px 8px;border-radius:4px;background:rgba(12,15,21,.85);border:1px solid var(--bdr2);color:var(--blue);backdrop-filter:blur(4px)}
+.coords{font-family:'JetBrains Mono',monospace;font-size:7.5px;padding:3px 8px;border-radius:4px;background:rgba(12,15,21,.85);border:1px solid var(--bdr2);color:var(--txt3);backdrop-filter:blur(4px)}
+.overlay-right{position:absolute;right:10px;top:10px;z-index:10;display:flex;gap:5px;flex-wrap:wrap}
+.btn{background:rgba(12,15,21,.88);border:1px solid var(--bdr2);color:var(--txt2);border-radius:7px;padding:7px 9px;font-family:'JetBrains Mono',monospace;font-size:9px;cursor:pointer;transition:.15s}
+.btn:hover{border-color:var(--blue);color:var(--blue)}
+.btn.warn:hover{border-color:var(--warn);color:var(--warn)}
+
+/* ── METADATA ── */
+.panel{padding:12px}
+.kv{display:grid;grid-template-columns:100px 1fr;gap:6px 8px;font-family:'JetBrains Mono',monospace;font-size:9.5px;line-height:1.7}
+.kv .k{color:var(--txt3)}
+.kv .v{color:var(--txt)}
+.note{margin-top:10px;background:rgba(149,170,211,.04);border:1px solid rgba(149,170,211,.12);border-radius:9px;padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:8.5px;line-height:1.7;color:var(--txt2)}
+
+/* ── DISPLAY CONTROLS ── */
+.controls-section{margin-top:12px;border-top:1px solid var(--bdr);padding-top:10px}
+.ctrl-label{font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);margin-bottom:8px}
+.ctrl-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.ctrl-row label{font-family:'JetBrains Mono',monospace;font-size:8.5px;color:var(--txt2);width:90px;flex-shrink:0}
+.ctrl-row .val{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--blue);width:34px;text-align:right;flex-shrink:0}
+input[type=range]{flex:1;-webkit-appearance:none;height:3px;background:var(--bdr2);border-radius:2px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--blue);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--blue);border:none;cursor:pointer}
+.reset-btn{margin-top:6px;width:100%;background:transparent;border:1px solid var(--bdr2);color:var(--txt3);border-radius:6px;padding:6px;font-family:'JetBrains Mono',monospace;font-size:8px;cursor:pointer;transition:.15s}
+.reset-btn:hover{border-color:var(--txt3);color:var(--txt)}
+
+/* ── STRIP ── */
+.stripcard{margin-top:12px}
+.striphdr{padding:8px 12px 0;font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:.1em;color:var(--txt3);text-transform:uppercase}
+.strip{display:flex;gap:5px;overflow-x:auto;padding:8px 12px 12px}
+.strip::-webkit-scrollbar{height:4px}.strip::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px}
+.thumb{flex:0 0 auto;width:70px;border-radius:7px;overflow:hidden;border:2px solid var(--bdr);background:#000;cursor:pointer;transition:.15s}
+.thumb:hover{border-color:var(--txt3)}
+.thumb.on{border-color:var(--blue)}
+.thumb img{display:block;width:70px;height:50px;object-fit:contain;background:#000}
+.thumb label{display:block;padding:2px 3px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:6.5px;color:var(--txt3);background:var(--bg);cursor:pointer}
+.thumb.on label{color:var(--blue)}
+
+/* ── GRID ── */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:9px;padding:12px}
+.gcard{background:var(--surf2);border:1px solid var(--bdr2);border-radius:9px;overflow:hidden;cursor:pointer;transition:.18s}
+.gcard:hover{transform:translateY(-2px);border-color:var(--blue)}
+.gcard img{display:block;width:100%;aspect-ratio:4/3;object-fit:contain;background:#000}
+.gfoot{padding:6px 8px;display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace}
+.gfoot .id{font-size:8.5px;color:var(--txt2)}.gfoot .n{font-size:7.5px;color:var(--txt3)}
+
+.hide{display:none}
+.toast{position:fixed;right:16px;bottom:16px;background:var(--surf);border:1px solid var(--blue);border-radius:8px;padding:9px 13px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--blue);display:none;z-index:999}
+
+@media(max-width:980px){
+  .app{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .main{padding:14px}
+  .layout{grid-template-columns:1fr}
+  .viewerwrap{height:58vh}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="brand">
+        <a href="https://yitingchiu-a.github.io/5-HT2A-NeuroAtlas/" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit">
+          <span class="pulse"></span>
+          <span class="atlas-name">5-HT2A NeuroAtlas</span>
+        </a>
+      </div>
+      <div class="subline">Htr2a-IRES-Cre</div>
+      <div class="monoline">Knockin · Fluorescence · 37 sections</div>
+    </div>
+
+    <div class="ssec">Navigation</div>
+    <div class="sitem on" id="nav-viewer">🧠 Viewer</div>
+    <div class="sitem" id="nav-grid">🔬 Section Grid</div>
+
+    <div class="ssec">Mouse Line</div>
+    <div class="sitem-info">Line <span>Htr2a-IRES-Cre</span></div>
+    <div class="sitem-info">Sample <span>2A-KI</span></div>
+    <div class="sitem-info">Channel <span style="color:var(--blue)">Fluorescence</span></div>
+    <div class="sitem-info">Sections <span>37 coronal</span></div>
+
+    <div class="ssec">Other Lines</div>
+    <div class="sitem" onclick="window.location='https://yitingchiu-a.github.io/Htr2a-EGFP-CreERT2/'">🟢 Htr2a-EGFP-CreERT2</div>
+    <div class="sitem" onclick="window.location='https://yitingchiu-a.github.io/Htr2a-A242S-EGFP-CT/'">🟢 Htr2a-A242S-EGFP-CT</div>
+
+    <div class="spacer"></div>
+    <div class="ssec">File paths</div>
+    <div class="sitem-info">Tiles <span style="color:var(--grn)">Tiles/&lt;id&gt;.dzi</span></div>
+    <div class="sitem-info">Full <span>Images/full/&lt;id&gt;.jpg</span></div>
+    <div class="sitem-info">Thumbs <span>Images/thumbs/&lt;id&gt;.jpg</span></div>
+
+    <a class="back-link" href="https://yitingchiu-a.github.io/5-HT2A-NeuroAtlas/">
+      ← Atlas Home
+    </a>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="title">Htr2a-IRES-Cre · <em>2A-KI</em></div>
+        <div class="subtitle">2A-KI · 37 coronal sections · Fluorescence · OpenSeadragon deep zoom viewer</div>
+      </div>
+      <a href="https://yitingchiu-a.github.io/5-HT2A-NeuroAtlas/" title="Back to 5-HT2A NeuroAtlas Home"
+        style="margin-left:auto;display:flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--txt3);background:var(--surf);border:1px solid var(--bdr2);border-radius:8px;padding:7px 12px;text-decoration:none;transition:.15s;white-space:nowrap"
+        onmouseover="this.style.borderColor='var(--grn)';this.style.color='var(--grn)'"
+        onmouseout="this.style.borderColor='var(--bdr2)';this.style.color='var(--txt3)'">
+        🏠 Atlas Home
+      </a>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="n" style="color:var(--blue)">37</div><div class="l">Sections</div></div>
+      <div class="stat"><div class="n" style="color:var(--blue)">Fluor</div><div class="l">Channel</div></div>
+      <div class="stat"><div class="n">IRES-Cre</div><div class="l">Construct</div></div>
+      <div class="stat"><div class="n" id="modeStat" style="color:var(--grn)">Auto</div><div class="l">Viewer mode</div></div>
+    </div>
+
+    <section id="viewerPanel">
+      <div class="layout">
+        <div class="card">
+          <div class="cardhdr">
+            <div>
+              <div class="cardtitle" id="sectionTitle">Section 1 / 37 · 2A-KI-1</div>
+              <div class="cardsub">Mouse wheel to zoom · drag to pan · arrow keys to switch sections</div>
+            </div>
+            <div class="badge" id="modeBadge">Detecting…</div>
+          </div>
+          <div class="viewerwrap">
+            <div id="viewer"></div>
+            <div class="overlay">
+              <div class="chip">Fluorescence · Htr2a-IRES-Cre</div>
+              <div class="chip" id="shareChip">2A-KI-1</div>
+              <div class="coords" id="coordChip">x: — y: — zoom: —</div>
+            </div>
+            <div class="overlay-right">
+              <button class="btn" id="prevBtn">◀ Prev</button>
+              <button class="btn" id="nextBtn">Next ▶</button>
+              <button class="btn" id="copyBtn">Copy link</button>
+              <button class="btn warn" id="fitBtn">Fit view</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="cardhdr">
+            <div>
+              <div class="cardtitle">Section Metadata</div>
+              <div class="cardsub">Deep zoom · DZI tiles + JPG fallback</div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="kv">
+              <div class="k">Section ID</div><div class="v" id="metaSection">2A-KI-1</div>
+              <div class="k">Index</div><div class="v" id="metaIndex">1 / 37</div>
+              <div class="k">Mouse line</div><div class="v">Htr2a-IRES-Cre</div>
+              <div class="k">Sample</div><div class="v">2A-KI</div>
+              <div class="k">Construct</div><div class="v" style="color:var(--blue)">IRES-Cre knockin</div>
+              <div class="k">Channel</div><div class="v" style="color:var(--blue)">Fluorescence</div>
+              <div class="k">Source</div><div class="v" id="metaSource" style="font-size:8px">—</div>
+            </div>
+
+            <div class="controls-section">
+              <div class="ctrl-label">Display Controls</div>
+              <div class="ctrl-row">
+                <label>Brightness</label>
+                <input type="range" id="masterBright" min="0" max="300" value="100">
+                <span class="val" id="masterBrightVal">100%</span>
+              </div>
+              <div class="ctrl-row">
+                <label>Contrast</label>
+                <input type="range" id="imgContrast" min="0" max="300" value="100">
+                <span class="val" id="imgContrastVal">100%</span>
+              </div>
+              <button class="reset-btn" id="resetDisplay">Reset display</button>
+            </div>
+
+            <div class="note">
+              Tries <b>Tiles/&lt;id&gt;.dzi</b> first for deep zoom. Falls back to <b>Images/full/&lt;id&gt;.jpg</b> if tiles are not available.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card stripcard">
+        <div class="striphdr">All 37 sections — click to navigate · Shift+scroll to browse</div>
+        <div class="strip" id="strip"></div>
+      </div>
+    </section>
+
+    <section id="gridPanel" class="hide">
+      <div class="card">
+        <div class="cardhdr">
+          <div>
+            <div class="cardtitle">Whole Brain Coronal Series · Htr2a-IRES-Cre</div>
+            <div class="cardsub">37 sections · click any to open in viewer</div>
+          </div>
+          <div class="badge">Images/thumbs</div>
+        </div>
+        <div class="grid" id="grid"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SECTIONS = Array.from({length: 37}, (_, i) => `2A-KI-${i + 1}`);
+
+const thumbPath = k => `Images/thumbs/${k}.jpg`;
+const fullPath  = k => `Images/full/${k}.jpg`;
+const tilePath  = k => `Tiles/${k}.dzi`;
+
+let idx = 0;
+let viewer = null;
+
+function initViewer(){
+  viewer = OpenSeadragon({
+    id: 'viewer',
+    prefixUrl: 'https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/images/',
+    showNavigator: true,
+    navigatorPosition: 'BOTTOM_RIGHT',
+    navigatorAutoResize: true,
+    visibilityRatio: 1,
+    constrainDuringPan: true,
+    zoomPerScroll: 1.2,
+    maxZoomPixelRatio: 4,
+    minZoomLevel: 0.5,
+    animationTime: 0.8,
+    blendTime: 0.12,
+    gestureSettingsTouch: { pinchToZoom:true, flickEnabled:true, clickToZoom:false, dblClickToZoom:true },
+    gestureSettingsMouse: { clickToZoom:false, dblClickToZoom:true, scrollToZoom:true }
+  });
+
+  viewer.addHandler('mouse-move', function(e){
+    const vp = viewer.viewport;
+    const wp = vp.pointFromPixel(e.position);
+    const zoom = vp.getZoom(true).toFixed(2);
+    document.getElementById('coordChip').textContent =
+      `x: ${wp.x.toFixed(3)}  y: ${wp.y.toFixed(3)}  zoom: ${zoom}x`;
+  });
+
+  viewer.addHandler('canvas-scroll', function(e){
+    if(e.originalEvent && e.originalEvent.shiftKey){
+      e.preventDefaultAction = true;
+      openSection(idx + (e.scroll > 0 ? -1 : 1));
+    }
+  });
+}
+
+function applyFilters(){
+  const brightness = document.getElementById('masterBright').value;
+  const contrast   = document.getElementById('imgContrast').value;
+  document.getElementById('viewer').style.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
+}
+
+document.getElementById('masterBright').addEventListener('input', function(){
+  document.getElementById('masterBrightVal').textContent = this.value + '%';
+  applyFilters();
+});
+document.getElementById('imgContrast').addEventListener('input', function(){
+  document.getElementById('imgContrastVal').textContent = this.value + '%';
+  applyFilters();
+});
+document.getElementById('resetDisplay').addEventListener('click', function(){
+  document.getElementById('masterBright').value = 100;
+  document.getElementById('imgContrast').value  = 100;
+  document.getElementById('masterBrightVal').textContent = '100%';
+  document.getElementById('imgContrastVal').textContent  = '100%';
+  applyFilters();
+});
+
+async function sourceFor(section){
+  const dzi = tilePath(section);
+  try{
+    const r = await fetch(dzi, { method:'HEAD' });
+    if(r.ok) return { type:'dzi', source:dzi, mode:'DZI tiles' };
+  }catch(e){}
+  return { type:'image', source:fullPath(section), mode:'JPG fallback' };
+}
+
+function setThumbSrc(img, section){
+  img.loading = 'lazy';
+  img.decoding = 'async';
+  img.src = thumbPath(section);
+  img.onerror = () => {
+    if(img.dataset.try2 !== '1'){
+      img.dataset.try2 = '1';
+      img.src = fullPath(section);
+    }
+  };
+}
+
+async function openSection(i, updateUrl=true){
+  idx = Math.max(0, Math.min(SECTIONS.length - 1, i));
+  const section = SECTIONS[idx];
+  const found = await sourceFor(section);
+
+  document.getElementById('sectionTitle').textContent = `Section ${idx+1} / ${SECTIONS.length} · ${section}`;
+  document.getElementById('metaSection').textContent  = section;
+  document.getElementById('metaIndex').textContent    = `${idx+1} / ${SECTIONS.length}`;
+  document.getElementById('shareChip').textContent    = section;
+  document.getElementById('modeBadge').textContent    = found.mode;
+  document.getElementById('modeStat').textContent     = found.mode.includes('DZI') ? 'DZI' : 'JPG';
+  document.getElementById('metaSource').textContent   = found.source;
+
+  if(found.type === 'dzi'){
+    viewer.open(found.source);
+  } else {
+    viewer.open({ type:'image', url:found.source, buildPyramid:false });
+  }
+
+  document.querySelectorAll('.thumb').forEach((el, j) => el.classList.toggle('on', j === idx));
+  const activeThumb = document.querySelectorAll('.thumb')[idx];
+  if(activeThumb) activeThumb.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
+
+  if(updateUrl){
+    const url = new URL(window.location.href);
+    url.searchParams.set('section', section);
+    history.replaceState({}, '', url);
+  }
+}
+
+function buildStrip(){
+  const strip = document.getElementById('strip');
+  strip.innerHTML = '';
+  SECTIONS.forEach((s, i) => {
+    const box = document.createElement('div');
+    box.className = 'thumb' + (i === idx ? ' on' : '');
+    box.onclick = () => openSection(i);
+    const img = document.createElement('img');
+    setThumbSrc(img, s);
+    const lbl = document.createElement('label');
+    lbl.textContent = i + 1;
+    box.appendChild(img);
+    box.appendChild(lbl);
+    strip.appendChild(box);
+  });
+}
+
+function buildGrid(){
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  SECTIONS.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 'gcard';
+    card.onclick = () => { showViewer(); openSection(i); };
+    const img = document.createElement('img');
+    setThumbSrc(img, s);
+    const foot = document.createElement('div');
+    foot.className = 'gfoot';
+    foot.innerHTML = `<span class="id">${s}</span><span class="n">#${i+1}</span>`;
+    card.appendChild(img);
+    card.appendChild(foot);
+    grid.appendChild(card);
+  });
+}
+
+function showViewer(){
+  document.getElementById('viewerPanel').classList.remove('hide');
+  document.getElementById('gridPanel').classList.add('hide');
+  document.getElementById('nav-viewer').classList.add('on');
+  document.getElementById('nav-grid').classList.remove('on');
+}
+function showGrid(){
+  document.getElementById('gridPanel').classList.remove('hide');
+  document.getElementById('viewerPanel').classList.add('hide');
+  document.getElementById('nav-grid').classList.add('on');
+  document.getElementById('nav-viewer').classList.remove('on');
+}
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.style.display = 'none', 2200);
+}
+
+function copyLink(){
+  const url = new URL(window.location.href);
+  url.searchParams.set('section', SECTIONS[idx]);
+  navigator.clipboard.writeText(url.toString());
+  toast('Link copied!');
+}
+
+function initialIndexFromURL(){
+  const p = new URLSearchParams(window.location.search).get('section');
+  const i = SECTIONS.indexOf(p);
+  return i >= 0 ? i : 0;
+}
+
+document.getElementById('prevBtn').onclick  = () => openSection(idx - 1);
+document.getElementById('nextBtn').onclick  = () => openSection(idx + 1);
+document.getElementById('copyBtn').onclick  = copyLink;
+document.getElementById('fitBtn').onclick   = () => viewer && viewer.viewport && viewer.viewport.goHome();
+document.getElementById('nav-viewer').onclick = showViewer;
+document.getElementById('nav-grid').onclick   = showGrid;
+
+document.addEventListener('keydown', (e) => {
+  if(document.getElementById('viewerPanel').classList.contains('hide')) return;
+  if(e.key === 'ArrowRight') openSection(idx + 1);
+  if(e.key === 'ArrowLeft')  openSection(idx - 1);
+  if(e.key.toLowerCase() === 'g') showGrid();
+  if(e.key.toLowerCase() === 'v') showViewer();
+});
+
+window.addEventListener('load', async () => {
+  initViewer();
+  buildStrip();
+  buildGrid();
+  idx = initialIndexFromURL();
+  await openSection(idx, false);
+});
+</script>
+</body>
+</html>
