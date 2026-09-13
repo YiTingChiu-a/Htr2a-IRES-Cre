@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Htr2a-A242S · EGFP-CT-IRES-Cre — 5-HT2A NeuroAtlas</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/openseadragon.min.js"></script>
+<style>
+:root{
+  --bg:#07090c; --surf:#0c0f15; --surf2:#12161e; --bdr:#1a1f2c; --bdr2:#222a3a;
+  --txt:#dde2ec; --txt2:#8a95af; --txt3:#556178; --grn:#3ecf8e; --gfp:#39e55e; --warn:#bf4567;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);font-family:'Syne',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(62,207,142,.06),transparent)}
+a{color:inherit;text-decoration:none}
+
+.app{position:relative;z-index:1;min-height:100vh;display:grid;grid-template-columns:250px minmax(0,1fr)}
+.sidebar{background:var(--surf);border-right:1px solid var(--bdr);padding:18px 0;display:flex;
+  flex-direction:column;min-height:100vh;position:sticky;top:0;max-height:100vh;overflow-y:auto}
+.sidebar::-webkit-scrollbar{width:5px}.sidebar::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
+.logo{padding:0 18px 18px;border-bottom:1px solid var(--bdr)}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px;letter-spacing:-.01em}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--grn);flex:0 0 auto;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.55)}}
+.subline{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gfp);margin-top:5px}
+.monoline{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--txt3);margin-top:3px;line-height:1.5}
+.ssec{padding:14px 18px 6px;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--txt3)}
+.sitem{display:block;margin:0 8px 2px;padding:9px 10px;border-radius:9px;color:var(--txt2);cursor:pointer;
+  font-size:13px;border:1px solid transparent;transition:.15s}
+.sitem:hover{background:var(--surf2);color:var(--txt)}
+.sitem.on{background:rgba(62,207,142,.08);color:var(--grn);border-color:rgba(62,207,142,.14)}
+.sitem-info{margin:0 8px 2px;padding:7px 10px;font-family:'JetBrains Mono',monospace;font-size:9px;
+  color:var(--txt3);display:flex;justify-content:space-between;gap:10px}
+.sitem-info span{color:var(--txt2);text-align:right;word-break:break-word;flex:1 1 auto}
+.sitem-info{white-space:nowrap}
+.spacer{flex:1}
+.back-link{display:block;margin:14px 8px 4px;padding:9px 10px;border-radius:9px;text-align:center;
+  font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--txt3);border:1px solid var(--bdr2);transition:.15s}
+.back-link:hover{color:var(--grn);border-color:rgba(62,207,142,.3)}
+
+.main{padding:24px 28px 24px;min-width:0}
+.topbar{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:18px}
+.title{font-size:28px;font-weight:700;letter-spacing:-.025em;line-height:1.15}
+.title em{font-style:normal;color:var(--gfp)}
+.subtitle{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--txt3);margin-top:7px}
+.homebtn{display:inline-flex;align-items:center;gap:8px;padding:10px 15px;border-radius:10px;
+  border:1px solid var(--bdr2);background:var(--surf);color:var(--txt2);
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;transition:.15s;white-space:nowrap}
+.homebtn:hover{border-color:var(--grn);color:var(--grn)}
+
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.stat{background:var(--surf);border:1px solid var(--bdr);border-radius:12px;padding:12px 15px;min-width:112px}
+.stat .n{font-size:21px;font-weight:700;line-height:1.1}
+.stat .l{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--txt3);text-transform:uppercase;
+  letter-spacing:.1em;margin-top:3px}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px}
+.card{background:var(--surf);border:1px solid var(--bdr2);border-radius:16px;overflow:hidden}
+.cardhdr{padding:14px 18px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.cardtitle{font-size:14px;font-weight:700}
+.cardsub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--txt3);margin-top:3px}
+.badge{margin-left:auto;background:rgba(62,207,142,.08);border:1px solid rgba(62,207,142,.15);color:var(--grn);
+  font-family:'JetBrains Mono',monospace;font-size:9px;border-radius:6px;padding:4px 10px}
+
+.viewerwrap{position:relative;height:70vh;min-height:420px;background:#000}
+#viewer-shell{position:absolute;inset:0;filter:brightness(var(--master-brightness,1))}
+#viewer-filter{position:absolute;inset:0;filter:brightness(var(--image-brightness,1)) contrast(var(--image-contrast,1))}
+#viewer{width:100%;height:100%}
+.overlay{position:absolute;left:12px;top:14px;display:flex;gap:7px;align-items:center;z-index:25;
+  pointer-events:none;flex-wrap:wrap;max-width:60%}
+.overlay-right{position:absolute;right:12px;top:14px;z-index:25;display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-family:'JetBrains Mono',monospace;font-size:8px;padding:4px 9px;border-radius:7px;
+  background:rgba(12,15,21,.85);border:1px solid var(--bdr2);color:var(--gfp);backdrop-filter:blur(4px);white-space:nowrap}
+.chip.muted{color:var(--txt2)}
+.btn{background:rgba(12,15,21,.9);border:1px solid var(--bdr2);color:var(--txt2);border-radius:8px;
+  padding:8px 11px;font-family:'JetBrains Mono',monospace;font-size:10px;cursor:pointer;transition:.15s;
+  backdrop-filter:blur(4px)}
+.btn:hover{border-color:var(--gfp);color:var(--gfp)}
+.btn.warn:hover{border-color:var(--warn);color:var(--warn)}
+.openseadragon-container,.openseadragon-canvas{background:#000 !important}
+.openseadragon-container .navigator{border:1px solid rgba(255,255,255,.18)!important;background:rgba(0,0,0,.2)!important}
+
+.panel{padding:16px 18px}
+.kv{display:grid;grid-template-columns:112px 1fr;gap:8px 10px;font-family:'JetBrains Mono',monospace;
+  font-size:10px;line-height:1.7}
+.kv .k{color:var(--txt3)} .kv .v{color:var(--txt);word-break:break-word}
+.ctrlblock{margin-top:16px;border-top:1px solid var(--bdr);padding-top:14px}
+.ctrltitle{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.12em;color:var(--txt3);
+  text-transform:uppercase;margin-bottom:11px}
+.sliderrow{margin-bottom:13px}
+.sliderrow label{display:flex;justify-content:space-between;align-items:center;font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--txt2);margin-bottom:6px}
+.sliderrow input[type=range]{width:100%;accent-color:var(--grn)}
+.wbtn{width:100%;text-align:center;background:var(--surf2)}
+.note{margin-top:14px;background:rgba(62,207,142,.04);border:1px solid rgba(62,207,142,.12);border-radius:10px;
+  padding:12px 13px;font-family:'JetBrains Mono',monospace;font-size:9px;line-height:1.75;color:var(--txt2)}
+.note b{color:var(--txt)}
+
+.stripcard{margin-top:14px}
+.striphdr{padding:12px 16px 0;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.1em;
+  color:var(--txt3);text-transform:uppercase}
+.strip{display:flex;gap:6px;overflow-x:auto;padding:11px 16px 16px}
+.strip::-webkit-scrollbar{height:5px}.strip::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
+.thumb{flex:0 0 auto;width:78px;border-radius:8px;overflow:hidden;border:2px solid var(--bdr);background:#000;
+  cursor:pointer;transition:.15s}
+.thumb:hover{border-color:var(--txt3)}
+.thumb.on{border-color:var(--gfp)}
+.thumb img{display:block;width:78px;height:56px;object-fit:contain;background:#000}
+.thumb label{display:block;padding:3px 4px;text-align:center;font-family:'JetBrains Mono',monospace;
+  font-size:7px;color:var(--txt3);background:var(--bg);cursor:pointer}
+.thumb.on label{color:var(--gfp)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:11px;padding:16px}
+.gcard{background:var(--surf2);border:1px solid var(--bdr2);border-radius:10px;overflow:hidden;cursor:pointer;transition:.18s}
+.gcard:hover{transform:translateY(-2px);border-color:var(--gfp)}
+.gcard img{display:block;width:100%;aspect-ratio:4/3;object-fit:contain;background:#000}
+.gfoot{padding:7px 9px;display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace}
+.gfoot .id{font-size:9px;color:var(--txt2)} .gfoot .n{font-size:8px;color:var(--txt3)}
+.hide{display:none}
+.toast{position:fixed;right:18px;bottom:18px;background:var(--surf);border:1px solid var(--gfp);border-radius:9px;
+  padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gfp);display:none;z-index:999}
+
+@media (max-width:1080px){ .layout{grid-template-columns:1fr} }
+@media (max-width:980px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:static;max-height:none;min-height:0;border-right:none;border-bottom:1px solid var(--bdr)}
+  .sidebar .spacer{display:none}
+  .main{padding:16px}
+  .title{font-size:22px}
+  .viewerwrap{height:60vh}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="logo">
+      <a class="brand" href="https://yitingchiu-a.github.io/5-HT2A-NeuroAtlas/"><span class="pulse"></span>5-HT2A NeuroAtlas</a>
+      <div class="subline">Htr2a-A242S-EGFP-CT-IRES-Cre</div>
+      <div class="monoline">A242S knockin · GFP channel · 39 sections</div>
+    </div>
+
+    <div class="ssec">Navigation</div>
+    <div class="sitem on" id="nav-viewer">🧠 Viewer</div>
+    <div class="sitem" id="nav-grid">🔬 Section Grid</div>
+
+
+    <div class="ssec">Mouse line</div>
+    <div class="sitem-info">Mouse line <span>Htr2a-A242S-EGFP-CT-IRES-Cre</span></div>
+    <div class="sitem-info">Sample <span>A242S-EGFP-1</span></div>
+    <div class="sitem-info">Mutation <span>A242S knockin</span></div>
+    <div class="sitem-info">Channel <span>GFP · EGFP-CT</span></div>
+    <div class="sitem-info">Sections <span>39 coronal</span></div>
+
+    <div class="ssec">Other lines</div>
+    <div class="sitem" onclick="window.location='https://yitingchiu-a.github.io/Htr2a-EGFP-CreERT2/'">🟢 Htr2a-EGFP-CreERT2</div>
+    <div class="sitem" onclick="window.location='https://yitingchiu-a.github.io/Htr2a-IRES-Cre/'">🟢 Htr2a-IRES-Cre</div>
+
+    <div class="spacer"></div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="title">Htr2a-A242S · <em>EGFP-CT-IRES-Cre</em></div>
+        <div class="subtitle">A242S-EGFP-1 · 39 coronal sections · GFP channel · OpenSeadragon deep zoom viewer</div>
+      </div>
+      <a class="homebtn" href="https://yitingchiu-a.github.io/5-HT2A-NeuroAtlas/">🏠 Atlas Home</a>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="n" style="color:var(--gfp)">39</div><div class="l">Sections</div></div>
+      <div class="stat"><div class="n" style="color:var(--gfp)">GFP</div><div class="l">Channel</div></div>
+      <div class="stat"><div class="n">A242S</div><div class="l">Knockin</div></div>
+      <div class="stat"><div class="n">DZI</div><div class="l">Viewer mode</div></div>
+    </div>
+
+    <section id="viewerPanel">
+      <div class="layout">
+        <div class="card">
+          <div class="cardhdr">
+            <div>
+              <div class="cardtitle" id="sectionTitle">Section 1 / 39</div>
+              <div class="cardsub">Mouse wheel to zoom · drag to pan · arrow keys to switch sections · Shift + wheel to browse</div>
+            </div>
+            <div class="badge" id="modeBadge">Detecting tile source…</div>
+          </div>
+          <div class="viewerwrap">
+            <div id="viewer-shell"><div id="viewer-filter"><div id="viewer"></div></div></div>
+            <div class="overlay">
+              <div class="chip">GFP · A242S-EGFP-CT</div>
+              <div class="chip" id="shareChip">—</div>
+              <div class="chip muted" id="readout">x: —  y: —  zoom: —</div>
+            </div>
+            <div class="overlay-right">
+              <button class="btn" id="prevBtn">◀ Prev</button>
+              <button class="btn" id="nextBtn">Next ▶</button>
+              <button class="btn" id="copyBtn">Copy link</button>
+              <button class="btn warn" id="fitBtn">Fit view</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="cardhdr">
+            <div>
+              <div class="cardtitle">Display</div>
+              <div class="cardsub">Adjust how the section is rendered</div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="ctrlblock" style="margin-top:0;border-top:none;padding-top:0">
+              <div class="sliderrow">
+                <label><span>Brightness</span><span id="brightVal">100%</span></label>
+                <input id="brightSlider" type="range" min="40" max="200" value="100">
+              </div>
+              <div class="sliderrow">
+                <label><span>Contrast</span><span id="contrastVal">100%</span></label>
+                <input id="contrastSlider" type="range" min="40" max="200" value="100">
+              </div>
+              <button class="btn wbtn" id="resetDisplayBtn">Reset display</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card stripcard">
+        <div class="striphdr">All 39 sections — click to navigate · shift+scroll to browse</div>
+        <div class="strip" id="strip"></div>
+      </div>
+    </section>
+
+    <section id="gridPanel" class="hide">
+      <div class="card">
+        <div class="cardhdr">
+          <div>
+            <div class="cardtitle">Whole brain coronal series</div>
+            <div class="cardsub">Thumbnail overview — click any section to open it in the viewer</div>
+          </div>
+          <div class="badge">Images/thumbs</div>
+        </div>
+        <div class="grid" id="grid"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SECTIONS = ["A242S-EGFP-1", "A242S-EGFP-2", "A242S-EGFP-3", "A242S-EGFP-4", "A242S-EGFP-5", "A242S-EGFP-6", "A242S-EGFP-7", "A242S-EGFP-8", "A242S-EGFP-9", "A242S-EGFP-10", "A242S-EGFP-11", "A242S-EGFP-12", "A242S-EGFP-13", "A242S-EGFP-14", "A242S-EGFP-15", "A242S-EGFP-16", "A242S-EGFP-17", "A242S-EGFP-18", "A242S-EGFP-19", "A242S-EGFP-20", "A242S-EGFP-21", "A242S-EGFP-22", "A242S-EGFP-23", "A242S-EGFP-24", "A242S-EGFP-25", "A242S-EGFP-26", "A242S-EGFP-27", "A242S-EGFP-28", "A242S-EGFP-29", "A242S-EGFP-30", "A242S-EGFP-31", "A242S-EGFP-32", "A242S-EGFP-33", "A242S-EGFP-34", "A242S-EGFP-35", "A242S-EGFP-36", "A242S-EGFP-37", "A242S-EGFP-38", "A242S-EGFP-39"];
+
+/* Last-resort image source. Relative paths always win when this file sits
+   next to Images/ and Tiles/ (locally, and on the published site). This only
+   kicks in for a stray copy opened somewhere else — e.g. a download. */
+const REMOTE = 'https://yitingchiu-a.github.io/Htr2a-A242S-EGFP-CT/';
+
+const thumbPath = k => 'Images/thumbs/' + k + '.jpg';
+const altThumb  = k => 'Images/thumbs/resized_' + k + '.jpg';
+const fullPath  = k => 'Images/full/' + k + '.jpg';
+const legacy    = k => 'Images/' + k + '.jpg';
+const tilePath  = k => 'Tiles/' + k + '.dzi';
+
+let idx = 0, viewer = null, token = 0, lastWheel = 0;
+
+function initViewer(){
+  viewer = OpenSeadragon({
+    id:'viewer',
+    prefixUrl:'https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/images/',
+    showNavigator:true, showNavigationControl:false,
+    navigatorPosition:'BOTTOM_RIGHT', navigatorAutoResize:true,
+    visibilityRatio:1, constrainDuringPan:true,
+    zoomPerScroll:1.15, maxZoomPixelRatio:6, minZoomLevel:0.7,
+    animationTime:0.55, blendTime:0.08, springStiffness:9.5,
+    maxImageCacheCount:800, imageLoaderLimit:8, timeout:20000,
+    preload:true, immediateRender:false,
+    gestureSettingsTouch:{pinchToZoom:true,flickEnabled:true,clickToZoom:false,dblClickToZoom:true},
+    gestureSettingsMouse:{clickToZoom:false,dblClickToZoom:true,scrollToZoom:true}
+  });
+  ['canvas-drag','canvas-scroll','animation','open','canvas-enter','canvas-move']
+    .forEach(e => viewer.addHandler(e, readout));
+  viewer.addHandler('canvas-exit', () => {
+    document.getElementById('readout').textContent = 'x: —  y: —  zoom: —';
+  });
+  document.getElementById('viewer-shell')
+    .addEventListener('wheel', sectionWheel, {passive:false});
+}
+
+function sectionWheel(e){
+  if(!e.shiftKey) return;
+  e.preventDefault();
+  const now = Date.now();
+  if(now - lastWheel < 180) return;
+  lastWheel = now;
+  openSection(idx + (e.deltaY > 0 ? 1 : -1));
+}
+
+function readout(e){
+  if(!viewer || !viewer.world || viewer.world.getItemCount() === 0) return;
+  const z = viewer.viewport.getZoom(true);
+  let s = 'zoom: ' + z.toFixed(2) + 'x';
+  if(e && e.position){
+    const p = viewer.viewport.viewportToImageCoordinates(viewer.viewport.pointFromPixel(e.position));
+    if(Number.isFinite(p.x) && Number.isFinite(p.y))
+      s = 'x: ' + Math.round(p.x) + '  y: ' + Math.round(p.y) + '  ' + s;
+  }
+  document.getElementById('readout').textContent = s;
+}
+
+function updateDisplay(){
+  const b = document.getElementById('brightSlider').value / 100;
+  const c = document.getElementById('contrastSlider').value / 100;
+  document.documentElement.style.setProperty('--image-brightness', b);
+  document.documentElement.style.setProperty('--image-contrast', c);
+  document.getElementById('brightVal').textContent = Math.round(b*100) + '%';
+  document.getElementById('contrastVal').textContent = Math.round(c*100) + '%';
+}
+function resetDisplay(){
+  document.getElementById('brightSlider').value = 100;
+  document.getElementById('contrastSlider').value = 100;
+  updateDisplay();
+}
+
+function setThumb(img, key){
+  img.loading = 'lazy'; img.decoding = 'async';
+  img.src = thumbPath(key);
+  img.onerror = () => {
+    if(img.dataset.t2 !== '1'){ img.dataset.t2 = '1'; img.src = altThumb(key); }
+    else if(img.dataset.t3 !== '1'){ img.dataset.t3 = '1'; img.src = fullPath(key); }
+    else if(img.dataset.t4 !== '1'){ img.dataset.t4 = '1'; img.src = legacy(key); }
+    else if(img.dataset.t5 !== '1'){ img.dataset.t5 = '1'; img.src = REMOTE + thumbPath(key); }
+  };
+}
+
+function setMeta(key, mode, src){
+  // the metadata list was removed from the panel; write only to what exists
+  const put = (id, txt) => { const el = document.getElementById(id); if(el) el.textContent = txt; };
+  put('sectionTitle', 'Section ' + (idx+1) + ' / ' + SECTIONS.length + ' · ' + key);
+  put('metaSection', key);
+  put('metaIndex', (idx+1) + ' / ' + SECTIONS.length);
+  put('shareChip', key);
+  put('modeBadge', mode);
+  put('metaSource', src);
+}
+
+function openWithFallback(key, tk){
+  const dzi = tilePath(key), jpg = fullPath(key), old = legacy(key);
+  // both handler sets must be cleared at every step, or the pending 'open'
+  // handler from the DZI attempt fires on the fallback and mislabels the source
+  const clear = () => { viewer.removeAllHandlers('open'); viewer.removeAllHandlers('open-failed'); };
+  const onOpen = (mode, src) => () => {
+    if(tk !== token) return;
+    clear(); setMeta(key, mode, src); readout();
+  };
+
+  const tryRemote = () => {
+    if(tk !== token) return;
+    clear();
+    const url = REMOTE + fullPath(key);
+    viewer.addOnceHandler('open', onOpen('Published JPG', url));
+    viewer.addOnceHandler('open-failed', () => { if(tk===token) setMeta(key, 'Image not found', url); });
+    viewer.open({type:'image', url:url, buildPyramid:false});
+  };
+  const tryLegacy = () => {
+    if(tk !== token) return;
+    clear();
+    viewer.addOnceHandler('open', onOpen('Legacy JPG', old));
+    viewer.addOnceHandler('open-failed', tryRemote);
+    viewer.open({type:'image', url:old, buildPyramid:false});
+  };
+  const tryJpg = () => {
+    if(tk !== token) return;
+    clear();
+    viewer.addOnceHandler('open', onOpen('JPG fallback', jpg));
+    viewer.addOnceHandler('open-failed', tryLegacy);
+    viewer.open({type:'image', url:jpg, buildPyramid:false});
+  };
+
+  clear();
+  setMeta(key, 'Trying DZI…', dzi);
+  viewer.addOnceHandler('open', onOpen('DZI tiles', dzi));
+  viewer.addOnceHandler('open-failed', tryJpg);
+  // OpenSeadragon takes a DZI as a plain URL string. Passing {type:'dzi', url}
+  // is NOT a supported tile source - it throws "Unable to load TileSource" and
+  // silently drops to the multi-MB full JPG. This is the deep-zoom path.
+  viewer.open(dzi);
+}
+
+function openSection(i, pushUrl = true){
+  idx = Math.max(0, Math.min(SECTIONS.length-1, i));
+  const key = SECTIONS[idx];
+  token += 1;
+  openWithFallback(key, token);
+
+  [idx-1, idx+1].filter(n => n >= 0 && n < SECTIONS.length)
+    .forEach(n => { const im = new Image(); im.src = thumbPath(SECTIONS[n]); });
+
+  document.querySelectorAll('.thumb').forEach((el,j) => el.classList.toggle('on', j===idx));
+  // scroll the strip itself — never the page
+  const strip = document.getElementById('strip');
+  const active = strip.children[idx];
+  if(active) strip.scrollTo({
+    left: active.offsetLeft - strip.clientWidth/2 + active.offsetWidth/2,
+    behavior: 'smooth'
+  });
+
+  if(pushUrl){
+    const u = new URL(location.href);
+    u.searchParams.set('section', key);
+    history.replaceState({}, '', u);
+  }
+}
+
+function buildStrip(){
+  const s = document.getElementById('strip'); s.innerHTML = '';
+  SECTIONS.forEach((k,i) => {
+    const b = document.createElement('div');
+    b.className = 'thumb' + (i===idx ? ' on' : '');
+    b.onclick = () => openSection(i);
+    const im = document.createElement('img'); setThumb(im, k);
+    const l = document.createElement('label'); l.textContent = k;
+    b.appendChild(im); b.appendChild(l); s.appendChild(b);
+  });
+}
+
+function buildGrid(){
+  const g = document.getElementById('grid'); g.innerHTML = '';
+  SECTIONS.forEach((k,i) => {
+    const c = document.createElement('div');
+    c.className = 'gcard';
+    c.onclick = () => { showViewer(); openSection(i); };
+    const im = document.createElement('img'); setThumb(im, k);
+    const f = document.createElement('div'); f.className = 'gfoot';
+    f.innerHTML = '<span class="id">' + k + '</span><span class="n">#' + (i+1) + '</span>';
+    c.appendChild(im); c.appendChild(f); g.appendChild(c);
+  });
+}
+
+function showViewer(){
+  document.getElementById('viewerPanel').classList.remove('hide');
+  document.getElementById('gridPanel').classList.add('hide');
+  document.getElementById('nav-viewer').classList.add('on');
+  document.getElementById('nav-grid').classList.remove('on');
+}
+function showGrid(){
+  document.getElementById('gridPanel').classList.remove('hide');
+  document.getElementById('viewerPanel').classList.add('hide');
+  document.getElementById('nav-grid').classList.add('on');
+  document.getElementById('nav-viewer').classList.remove('on');
+}
+
+function toast(m){
+  const t = document.getElementById('toast');
+  t.textContent = m; t.style.display = 'block';
+  clearTimeout(t._t); t._t = setTimeout(() => t.style.display = 'none', 2000);
+}
+
+document.getElementById('prevBtn').onclick = () => openSection(idx-1);
+document.getElementById('nextBtn').onclick = () => openSection(idx+1);
+document.getElementById('fitBtn').onclick  = () => viewer && viewer.viewport.goHome();
+document.getElementById('copyBtn').onclick = () => {
+  const u = new URL(location.href);
+  u.searchParams.set('section', SECTIONS[idx]);
+  navigator.clipboard.writeText(u.toString());
+  toast('Copied link to ' + SECTIONS[idx]);
+};
+document.getElementById('nav-viewer').onclick = showViewer;
+document.getElementById('nav-grid').onclick   = showGrid;
+document.getElementById('brightSlider').oninput   = updateDisplay;
+document.getElementById('contrastSlider').oninput = updateDisplay;
+document.getElementById('resetDisplayBtn').onclick = resetDisplay;
+
+document.addEventListener('keydown', e => {
+  if(document.getElementById('viewerPanel').classList.contains('hide')){
+    if(e.key.toLowerCase() === 'v') showViewer();
+    return;
+  }
+  if(e.key === 'ArrowRight') openSection(idx+1);
+  if(e.key === 'ArrowLeft')  openSection(idx-1);
+  if(e.key.toLowerCase() === 'g') showGrid();
+  if(e.key.toLowerCase() === 'v') showViewer();
+});
+
+window.addEventListener('load', () => {
+  initViewer(); buildStrip(); buildGrid(); resetDisplay();
+  const want = new URLSearchParams(location.search).get('section');
+  const i = SECTIONS.indexOf(want);
+  idx = i >= 0 ? i : 0;
+  if(new URLSearchParams(location.search).get('view') === 'grid') showGrid();
+  openSection(idx, false);
+});
+</script>
+</body>
+</html>
